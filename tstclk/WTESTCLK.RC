@@ -5,18 +5,25 @@
 #include <windows.h>
 #include "res.h"
 
-CMDLGAPMENU MENU
+TESTCLKMENU MENU
 BEGIN
 	POPUP "&File"
 	BEGIN
-		MENUITEM "&Open",       CM_U_FILEOPEN
+		MENUITEM "&Open", CM_U_FILEOPEN
 		MENUITEM SEPARATOR
-		MENUITEM "E&xit",       CM_EXIT
+		MENUITEM "E&xit", CM_EXIT
+	END
+
+	POPUP "&Edit"
+	BEGIN
+		MENUITEM  "&Cut\tShift+Del", CM_U_EDITCUT   // 201
+		MENUITEM "&Copy\tShift+Ins", CM_U_EDITCOPY  // 202
+		MENUITEM "&Paste\tCtrl+Ins", CM_U_EDITPASTE // 203
 	END
 
 	POPUP "\a&Help"
 	BEGIN
-		MENUITEM "&About",      CM_U_HELPABOUT
+		MENUITEM "&About", CM_U_HELPABOUT
 	END
 
 END
