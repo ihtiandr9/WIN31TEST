@@ -11,12 +11,21 @@ char szName[256];
 //COLORREF crColor;
 HFONT hfFont;
 //BOOL tfFontLoaded;
-HINSTANCE hInst;	// current instance
-
+static HINSTANCE hInst = 0;	// current instance
+static int nCmdShow;
 /**********************************************************************/
-BOOL InitApplication(HINSTANCE hInstance)
+// { Forward declarations
+WORD AppWnd_run(struct AppWnd* wnd);
+// }
+/**********************************************************************/
+BOOL AppWnd_register(HINSTANCE hInstance)
 {
 	WNDCLASS  wc;
+
+    if(hInst)
+        return TRUE;
+
+    hInst = hInstance;
 
 	// Fill in window class structure with parameters that describe the
 	// main window.
@@ -36,46 +45,6 @@ BOOL InitApplication(HINSTANCE hInstance)
 	/* Register the window class and return success/failure code. */
 
 	return (RegisterClass(&wc));
-
-}
-
-
-/************************************************************************/
-BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
-{
-	HWND	hWnd;	// Main window handle.
-
-	/* Save the instance handle in static variable, which will be used in  */
-	/* many subsequence calls from this application to Windows.            */
-
-	hInst = hInstance;
-
-	/* Create a main window for this application instance.  */
-
-	hWnd = CreateWindow(
-		"CMDLG", 	               // See RegisterClass() call.
-		"Test of machine speed",       // Text for window title bar.
-		WS_OVERLAPPEDWINDOW,	       // Window style.
-		CW_USEDEFAULT, 		       // Default horizontal position.
-		CW_USEDEFAULT,	   	       // Default vertical position.
-		CW_USEDEFAULT,	      	       // Default width.
-		CW_USEDEFAULT, 		       // Default height.
-		NULL,		   	       // Overlapped windows have no parent.
-		NULL,	   		       // Use the window class menu.
-		hInstance,  		       // This instance owns this window.
-		NULL			       // Pointer not needed.
-	);
-
-	/* If window could not be created, return "failure" */
-
-	if (!hWnd)
-		return (FALSE);
-
-	/* Make the window visible; update its client area; and return "success" */
-
-	ShowWindow(hWnd, nCmdShow);	// Show the window
-	UpdateWindow(hWnd);			// Sends WM_PAINT message
-	return (TRUE);				// Returns the value from PostQuitMessage
 
 }
 
@@ -143,4 +112,60 @@ long FAR PASCAL _export MainWndProc(HWND hWnd, unsigned message,
 		return (DefWindowProc(hWnd, message, wParam, lParam));
 	}
 	return (NULL);
+}
+
+BOOL AppWnd_create(struct AppWnd* wnd, HINSTANCE hInstance, int _cmd)
+{
+
+    HWND hWnd;
+    nCmdShow = _cmd;
+    wnd->run = AppWnd_run;
+
+    AppWnd_register(hInstance);
+    
+	/* Create a main window for this application instance.  */
+	hWnd = CreateWindow(
+		"CMDLG", 	               // See RegisterClass() call.
+		"Test of machine speed",       // Text for window title bar.
+		WS_OVERLAPPEDWINDOW,	       // Window style.
+		CW_USEDEFAULT, 		       // Default horizontal position.
+		CW_USEDEFAULT,	   	       // Default vertical position.
+		CW_USEDEFAULT,	      	       // Default width.
+		CW_USEDEFAULT, 		       // Default height.
+		NULL,		   	       // Overlapped windows have no parent.
+		NULL,	   		       // Use the window class menu.
+		hInst,  		       // This instance owns this window.
+		NULL			       // Pointer not needed.
+	);
+
+	/* If window could not be created, return "failure" */
+
+	if (!hWnd)
+		return (FALSE);
+
+	/* Make the window visible; update its client area; and return "success" */
+
+    wnd->hWnd = hWnd;
+	return (TRUE);				// Returns the value from PostQuitMessage
+
+} 
+
+WORD AppWnd_run(struct AppWnd* wnd)
+{
+    HWND hWnd = wnd->hWnd;
+    MSG msg;
+
+    ShowWindow(hWnd, nCmdShow);	// Show the window
+    UpdateWindow(hWnd);			// Sends WM_PAINT message
+    while (GetMessage(&msg,	    // message structure
+                NULL,	        // handle of window receiving the message
+                NULL,	        // lowest message to examine
+                NULL))	        // highest message to examine
+    {
+ /* Acquire and dispatch messages until a WM_QUIT message is received. */
+
+        TranslateMessage(&msg);	// Translates virtual key codes
+        DispatchMessage(&msg);	// Dispatches message to window
+    }
+    return (msg.wParam);	
 }
