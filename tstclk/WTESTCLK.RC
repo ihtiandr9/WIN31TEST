@@ -1,0 +1,23 @@
+// Borland C++ Windows - (C) Copyright 1992 by Borland International
+
+// FILE : cmdlg.rc
+
+#include <windows.h>
+#include "res.h"
+
+CMDLGAPMENU MENU
+BEGIN
+	POPUP "&File"
+	BEGIN
+		MENUITEM "&Open",       CM_U_FILEOPEN
+		MENUITEM SEPARATOR
+		MENUITEM "E&xit",       CM_EXIT
+	END
+
+	POPUP "\a&Help"
+	BEGIN
+		MENUITEM "&About",      CM_U_HELPABOUT
+	END
+
+END
+
