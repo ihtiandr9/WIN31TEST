@@ -5,7 +5,7 @@
 int PASCAL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 				   LPSTR lpCmdLine, int nCmdShow)
 {
-    struct AppWnd main;
+    struct AppWnd main = {0};
 
     if (!hPrevInstance)	// Other instances of app running?
     {

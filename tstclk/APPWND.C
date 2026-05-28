@@ -7,7 +7,7 @@
 
 static HINSTANCE hInst = 0;	// current instance
 static int nCmdShow;
-static HWND hBtnClose;
+
 /**********************************************************************/
 // { Forward declarations
 WORD AppWnd_run(struct AppWnd* wnd);
@@ -19,16 +19,32 @@ static void AppWnd_OnCreate(struct AppWnd* Sender, LPCREATESTRUCT CreateStruct)
 {
     RECT rc;
     GetClientRect(Sender->hWnd, &rc);
-    hBtnClose = CreateWindow(
-        "BUTTON", "&Close",
+    Sender->hBtnClose = CreateWindow(
+	"BUTTON", "&OK",
         WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-        (rc.right - 80) / 2, (rc.bottom - 30) / 2,
+        (rc.right - 80) / 2, rc.bottom - 60 - 30,
         80, 30,
         Sender->hWnd,
         (HMENU)CM_EXIT,
         CreateStruct->hInstance,
         NULL
     );
+}
+
+static void AppWnd_OnSize(struct AppWnd* Sender, WORD ResizeType, WORD Width, WORD Height)
+{
+    RECT btnR;
+    int cWidth, cHeight, cXpos, cYpos;
+    if (Sender->hBtnClose){
+        GetClientRect(Sender->hBtnClose, &btnR);
+
+        cWidth = btnR.right - btnR.left;
+        cHeight = btnR.bottom - btnR.top;
+        cXpos = (Width - cWidth) / 2;
+        cYpos = max(80, (int)Height - 60);
+
+        MoveWindow(Sender->hBtnClose, cXpos, cYpos, cWidth, cHeight, TRUE);
+    }
 }
 
 static void AppWnd_OnPaint(struct AppWnd* Sender)
@@ -136,6 +152,13 @@ long FAR PASCAL _export MainWndProc(HWND hWnd, unsigned message,
                 return DefWindowProc(hWnd, message, wParam, lParam);
             break;
 
+        case WM_SIZE:
+            if (wnd->OnSize)
+                wnd->OnSize(wnd, wParam, LOWORD(lParam), HIWORD(lParam));
+            else
+                return DefWindowProc(hWnd, message, wParam, lParam);
+            break;
+
         case WM_COMMAND:	// message: command from application menu
             if (wnd->OnCommand)
                 wnd->OnCommand(wnd, wParam, (HWND)LOWORD(lParam));
@@ -161,10 +184,11 @@ BOOL AppWnd_create(struct AppWnd* wnd, HINSTANCE hInstance, int _cmd)
     HWND hWnd;
 
     // Set default event handlers
-    wnd->OnCreate  = AppWnd_OnCreate;
-    wnd->OnPaint   = AppWnd_OnPaint;
-    wnd->OnCommand = AppWnd_OnCommand;
-    wnd->OnDestroy = AppWnd_OnDestroy;
+    if(!wnd->OnCreate)  wnd->OnCreate  = AppWnd_OnCreate;
+    if(!wnd->OnPaint)   wnd->OnPaint   = AppWnd_OnPaint;
+    if(!wnd->OnCommand) wnd->OnCommand = AppWnd_OnCommand;
+    if(!wnd->OnSize)    wnd->OnSize    = AppWnd_OnSize;
+    if(!wnd->OnDestroy) wnd->OnDestroy = AppWnd_OnDestroy;
 
     nCmdShow = _cmd;
     wnd->run = AppWnd_run;
